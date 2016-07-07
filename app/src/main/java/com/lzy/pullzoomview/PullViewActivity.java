@@ -39,5 +39,16 @@ public class PullViewActivity extends AppCompatActivity {
                 System.out.println("onContentScroll   t:" + t + "  oldt:" + oldt);
             }
         });
+        pzv.setOnPullZoomListener(new PullZoomView.OnPullZoomListener() {
+            @Override
+            public void onPullZoom(int originHeight, int currentHeight) {
+                System.out.println("onPullZoom  originHeight:" + originHeight + "  currentHeight:" + currentHeight);
+            }
+
+            @Override
+            public void onZoomFinish() {
+                System.out.println("onZoomFinish");
+            }
+        });
     }
 }

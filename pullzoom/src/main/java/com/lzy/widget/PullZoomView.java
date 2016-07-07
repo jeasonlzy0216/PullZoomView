@@ -12,7 +12,6 @@ import android.view.ViewTreeObserver;
 import android.widget.ScrollView;
 import android.widget.Scroller;
 
-
 /**
  * ================================================
  * 作    者：廖子尧
@@ -63,6 +62,20 @@ public class PullZoomView extends ScrollView {
         }
 
         public void onContentScroll(int l, int t, int oldl, int oldt) {
+        }
+    }
+
+    private OnPullZoomListener pullZoomListener; //下拉放大的监听
+
+    public void setOnPullZoomListener(OnPullZoomListener pullZoomListener) {
+        this.pullZoomListener = pullZoomListener;
+    }
+
+    public static abstract class OnPullZoomListener {
+        public void onPullZoom(int originHeight, int currentHeight) {
+        }
+
+        public void onZoomFinish() {
         }
     }
 
@@ -218,6 +231,7 @@ public class PullZoomView extends ScrollView {
                         }
                         headerParams.height = height;
                         headerView.setLayoutParams(headerParams);
+                        if (pullZoomListener != null) pullZoomListener.onPullZoom(headerHeight, headerParams.height);
                     }
                 }
                 break;
@@ -234,13 +248,22 @@ public class PullZoomView extends ScrollView {
         return isZooming || super.onTouchEvent(ev);
     }
 
+    private boolean isStartScroll = false;          //当前是否下拉过
+
     @Override
     public void computeScroll() {
         super.computeScroll();
         if (scroller.computeScrollOffset()) {
+            isStartScroll = true;
             headerParams.height = scroller.getCurrY();
             headerView.setLayoutParams(headerParams);
+            if (pullZoomListener != null) pullZoomListener.onPullZoom(headerHeight, headerParams.height);
             ViewCompat.postInvalidateOnAnimation(this);
+        } else {
+            if (pullZoomListener != null && isStartScroll) {
+                isStartScroll = false;
+                pullZoomListener.onZoomFinish();
+            }
         }
     }
 

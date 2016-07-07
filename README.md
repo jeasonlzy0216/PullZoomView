@@ -6,7 +6,7 @@
 ### 联系方式
  * 邮箱地址： liaojeason@126.com
  * QQ群： 489873144 （建议使用QQ群，邮箱使用较少，可能看的不及时）
- * 本群刚建立，旨在为使用我的github项目的人提供方便，如果遇到问题欢迎在群里提问。个人能力也有限，希望一起学习一起进步。
+ * 本群旨在为使用我的github项目的人提供方便，如果遇到问题欢迎在群里提问。个人能力也有限，希望一起学习一起进步。
 
 
 ## 演示
@@ -15,7 +15,7 @@
 ## 1.温馨提示
   该项目和我github上其他的view相关的项目已经一起打包上传到jCenter仓库中（源码地址 [https://github.com/jeasonlzy0216/ViewCore](https://github.com/jeasonlzy0216/ViewCore) ），使用的时候可以直接使用compile依赖，用法如下
 ```java
-	compile 'com.lzy.widget:view-core:0.1.9'
+	compile 'com.lzy.widget:view-core:0.2.2'
 ```
 或者使用
 ```java
@@ -67,11 +67,15 @@ PullZoomView 继承至 ScrollView，通过布局设置 Tag 和 重写滑动事�
  * 其他例如 ScrollView，WebView，View子类，ViewGroup子类均使用原生类即可，不用做任何改动。
 
 ## 5.代码参考
-该类`PullZoomView`对外提供了滑动监听器，三个方法分别表示
+对外提供了滑动监听器`PullZoomView.OnScrollListener`，其中有三个方法
 
  * `onScroll(int l, int t, int oldl, int oldt)`: 表示`PullZoomView`滑动全程的监听
  * `onHeaderScroll(int currentY, int maxY)`: 表示头部从完全展现，到完全滑出的监听过程
  * `onContentScroll(int l, int t, int oldl, int oldt)`： 表示除了头部外，内容布局从最顶部滑动到最底部的监听过程
+ 
+同时提供了下拉放大的监听器`PullZoomView.OnPullZoomListener`,其中有两个方法
+ * `onPullZoom(int originHeight, int currentHeight)`:表示下拉头部时,头部的的当前大小,单位px
+ * `onZoomFinish()`:表示头部恢复原始大小,即放大结束后的回调
 
 此外允许通过代码对滑动行为动态控制
 ```java
@@ -103,6 +107,17 @@ PullZoomView 继承至 ScrollView，通过布局设置 Tag 和 重写滑动事�
             @Override
             public void onContentScroll(int l, int t, int oldl, int oldt) {
                 System.out.println("onContentScroll   t:" + t + "  oldt:" + oldt);
+            }
+        });
+        pzv.setOnPullZoomListener(new PullZoomView.OnPullZoomListener() {
+            @Override
+            public void onPullZoom(int originHeight, int currentHeight) {
+                System.out.println("onPullZoom  originHeight:" + originHeight + "  currentHeight:" + currentHeight);
+            }
+
+            @Override
+            public void onZoomFinish() {
+                System.out.println("onZoomFinish");
             }
         });
 ```
