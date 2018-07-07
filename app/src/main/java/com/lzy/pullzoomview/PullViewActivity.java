@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.ViewTarget;
 import com.lzy.widget.PullZoomView;
 
 public class PullViewActivity extends AppCompatActivity {
@@ -23,7 +24,8 @@ public class PullViewActivity extends AppCompatActivity {
         String imageUrl= intent.getStringExtra("imageUrl");
 
         ImageView imageHeader = findViewById(R.id.iv_header_image);
-        //Glide.with(this).load(imageUrl).into(imageHeader);
+
+        Glide.with(this).load(imageUrl).into(imageHeader);
 
         PullZoomView pzv = findViewById(R.id.pzv);
         pzv.setIsParallax(isParallax);
