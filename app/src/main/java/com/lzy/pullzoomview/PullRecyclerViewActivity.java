@@ -7,8 +7,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.lzy.widget.PullZoomView;
 import com.lzy.widget.manager.ExpandLinearLayoutManager;
 
@@ -30,6 +32,10 @@ public class PullRecyclerViewActivity extends AppCompatActivity {
         int zoomTime = intent.getIntExtra("zoomTime", 500);
         boolean isParallax = intent.getBooleanExtra("isParallax", true);
         boolean isZoomEnable = intent.getBooleanExtra("isZoomEnable", true);
+        String imageUrl= intent.getStringExtra("imageUrl");
+
+        ImageView imageHeader = findViewById(R.id.iv_header_image);
+        Glide.with(this).load(imageUrl).into(imageHeader);
         PullZoomView pzv = (PullZoomView) findViewById(R.id.pzv);
         pzv.setIsParallax(isParallax);
         pzv.setIsZoomEnable(isZoomEnable);

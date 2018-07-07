@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private TextView tv_sensitive;
     private TextView tv_zoomTime;
 
+    private String imageUrl = "http://static.v.xingyunyd.com/live/5d8502e2-3a4e-43ca-8e1a-60f15e44c994.jpg";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra("zoomTime", zoomTime);
         intent.putExtra("isParallax", isParallax);
         intent.putExtra("isZoomEnable", isZoomEnable);
+        intent.putExtra("imageUrl", imageUrl);
         switch (position) {
             case 0:
                 intent.setClass(this, PullScrollViewActivity.class);
