@@ -23,7 +23,7 @@ public class PullViewActivity extends AppCompatActivity {
         String imageUrl= intent.getStringExtra("imageUrl");
 
         ImageView imageHeader = findViewById(R.id.iv_header_image);
-        Glide.with(this).load(imageUrl).into(imageHeader);
+        //Glide.with(this).load(imageUrl).into(imageHeader);
 
         PullZoomView pzv = findViewById(R.id.pzv);
         pzv.setIsParallax(isParallax);

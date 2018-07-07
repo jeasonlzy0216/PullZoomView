@@ -18,7 +18,7 @@ import android.widget.Scroller;
  * 创建日期：2016/3/13
  * 描    述：
  * 修订历史：
- *
+ * <p>
  * ================================================
  */
 public class PullZoomView extends ScrollView {
@@ -107,18 +107,18 @@ public class PullZoomView extends ScrollView {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         findTagViews(this);
-        if (headerView == null || contentView == null) {
+        if (headerView == null || zoomView == null|| contentView == null) {
             throw new IllegalStateException("content, header, zoom 都不允许为空,请在Xml布局中设置Tag，或者使用属性设置");
         }
-        contentView.post(new Runnable() {
+        headerParams = (MarginLayoutParams) headerView.getLayoutParams();
+        smoothScrollTo(0, 0);//如果是滚动到最顶部，默认最顶部是ListView的顶部
+        post(new Runnable() {
             @Override
             public void run() {
                 maxY = contentView.getTop();//只有布局完成后才能获取到正确的值
+                headerHeight = headerView.getHeight();
             }
         });
-        headerParams = (MarginLayoutParams) headerView.getLayoutParams();
-        headerHeight = headerParams.height;
-        smoothScrollTo(0, 0);//如果是滚动到最顶部，默认最顶部是ListView的顶部
     }
 
     /**
@@ -155,33 +155,6 @@ public class PullZoomView extends ScrollView {
         }
     }
 
-    private boolean scrollFlag = false;  //该标记主要是为了防止快速滑动时，onScroll回调中可能拿不到最大和最小值
-
-    @Override
-    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        super.onScrollChanged(l, t, oldl, oldt);
-        if (scrollListener != null) scrollListener.onScroll(l, t, oldl, oldt);
-        if (t >= 0 && t <= maxY) {
-            scrollFlag = true;
-            if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
-        } else if (scrollFlag) {
-            scrollFlag = false;
-            if (t < 0) t = 0;
-            if (t > maxY) t = maxY;
-            if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
-        }
-        if (t >= maxY) {
-            if (scrollListener != null)
-                scrollListener.onContentScroll(l, t - maxY, oldl, oldt - maxY);
-        }
-        if (isParallax) {
-            if (t >= 0 && t <= headerHeight) {
-                headerView.scrollTo(0, -(int) (0.65 * t));
-            } else {
-                headerView.scrollTo(0, 0);
-            }
-        }
-    }
 
     /**
      * 主要用于解决 RecyclerView嵌套，直接拦截事件，可能会出现其他问题
@@ -231,7 +204,8 @@ public class PullZoomView extends ScrollView {
                 lastEventY = currentY;
                 if (isTop()) {
                     if (shiftY > shiftX && shiftY > touchSlop) {
-                        int height = (int) (headerParams.height + dy / sensitive + 0.5);
+
+                        int height = (int) (headerView.getHeight() + dy / sensitive + 0.5);
                         if (height <= headerHeight) {
                             height = headerHeight;
                             isZooming = false;
@@ -249,7 +223,7 @@ public class PullZoomView extends ScrollView {
             case MotionEvent.ACTION_CANCEL:
                 isActionDown = false;
                 if (isZooming) {
-                    scroller.startScroll(0, headerParams.height, 0, -(headerParams.height - headerHeight), zoomTime);
+                    scroller.startScroll(0, headerView.getHeight(), 0, -(headerView.getHeight() - headerHeight), zoomTime);
                     isZooming = false;
                     ViewCompat.postInvalidateOnAnimation(this);
                 }
@@ -257,6 +231,36 @@ public class PullZoomView extends ScrollView {
         }
         return isZooming || super.onTouchEvent(ev);
     }
+
+
+    private boolean scrollFlag = false;  //该标记主要是为了防止快速滑动时，onScroll回调中可能拿不到最大和最小值
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        if (scrollListener != null) scrollListener.onScroll(l, t, oldl, oldt);
+        if (t >= 0 && t <= maxY) {
+            scrollFlag = true;
+            if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
+        } else if (scrollFlag) {
+            scrollFlag = false;
+            if (t < 0) t = 0;
+            if (t > maxY) t = maxY;
+            if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
+        }
+        if (t >= maxY) {
+            if (scrollListener != null)
+                scrollListener.onContentScroll(l, t - maxY, oldl, oldt - maxY);
+        }
+        if (isParallax) {
+            if (t >= 0 && t <= headerHeight) {
+                headerView.scrollTo(0, -(int) (0.65 * t));
+            } else {
+                headerView.scrollTo(0, 0);
+            }
+        }
+    }
+
 
     private boolean isStartScroll = false;          //当前是否下拉过
 

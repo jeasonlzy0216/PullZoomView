@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:tag="header">
 
     <ImageView
         android:id="@+id/iv_header_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="200dp"
         android:scaleType="centerCrop"
-        android:src="@mipmap/splash" />
+        android:src="@mipmap/splash"
+        android:tag="zoom" />
 
     <ImageView
         android:id="@+id/icon"
@@ -19,7 +19,7 @@
         android:layout_height="60dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
-        android:src="@mipmap/header"/>
+        android:src="@mipmap/header" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -31,7 +31,7 @@
         android:shadowRadius="3"
         android:text="用户名"
         android:textColor="#ffffff"
-        android:textSize="18sp"/>
+        android:textSize="18sp" />
 
     <LinearLayout
         android:id="@+id/ll_action_button"
@@ -52,7 +52,7 @@
             android:gravity="center"
             android:text="注册"
             android:textColor="#ffffff"
-            android:textSize="18sp"/>
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tv_login"
@@ -63,6 +63,6 @@
             android:gravity="center"
             android:text="登录"
             android:textColor="#ffffff"
-            android:textSize="18sp"/>
+            android:textSize="18sp" />
     </LinearLayout>
 </RelativeLayout>
