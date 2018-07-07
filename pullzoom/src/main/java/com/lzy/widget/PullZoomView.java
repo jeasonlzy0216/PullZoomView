@@ -8,7 +8,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ScrollView;
 import android.widget.Scroller;
 
@@ -53,7 +52,9 @@ public class PullZoomView extends ScrollView {
         this.scrollListener = scrollListener;
     }
 
-    /** 滚动的监听，范围从 0 ~ maxY */
+    /**
+     * 滚动的监听，范围从 0 ~ maxY
+     */
     public static abstract class OnScrollListener {
         public void onScroll(int l, int t, int oldl, int oldt) {
         }
@@ -99,14 +100,6 @@ public class PullZoomView extends ScrollView {
 
         scroller = new Scroller(getContext());
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-
-        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                maxY = contentView.getTop();//只有布局完成后才能获取到正确的值
-            }
-        });
     }
 
     @Override
@@ -116,12 +109,20 @@ public class PullZoomView extends ScrollView {
         if (headerView == null || zoomView == null || contentView == null) {
             throw new IllegalStateException("content, header, zoom 都不允许为空,请在Xml布局中设置Tag，或者使用属性设置");
         }
+        contentView.post(new Runnable() {
+            @Override
+            public void run() {
+                maxY = contentView.getTop();//只有布局完成后才能获取到正确的值
+            }
+        });
         headerParams = (MarginLayoutParams) headerView.getLayoutParams();
         headerHeight = headerParams.height;
         smoothScrollTo(0, 0);//如果是滚动到最顶部，默认最顶部是ListView的顶部
     }
 
-    /** 递归遍历所有的View，查询Tag */
+    /**
+     * 递归遍历所有的View，查询Tag
+     */
     private void findTagViews(View v) {
         if (v instanceof ViewGroup) {
             ViewGroup vg = (ViewGroup) v;
@@ -163,7 +164,8 @@ public class PullZoomView extends ScrollView {
             if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
         }
         if (t >= maxY) {
-            if (scrollListener != null) scrollListener.onContentScroll(l, t - maxY, oldl, oldt - maxY);
+            if (scrollListener != null)
+                scrollListener.onContentScroll(l, t - maxY, oldl, oldt - maxY);
         }
         if (isParallax) {
             if (t >= 0 && t <= headerHeight) {
@@ -231,7 +233,8 @@ public class PullZoomView extends ScrollView {
                         }
                         headerParams.height = height;
                         headerView.setLayoutParams(headerParams);
-                        if (pullZoomListener != null) pullZoomListener.onPullZoom(headerHeight, headerParams.height);
+                        if (pullZoomListener != null)
+                            pullZoomListener.onPullZoom(headerHeight, headerParams.height);
                     }
                 }
                 break;
@@ -257,7 +260,8 @@ public class PullZoomView extends ScrollView {
             isStartScroll = true;
             headerParams.height = scroller.getCurrY();
             headerView.setLayoutParams(headerParams);
-            if (pullZoomListener != null) pullZoomListener.onPullZoom(headerHeight, headerParams.height);
+            if (pullZoomListener != null)
+                pullZoomListener.onPullZoom(headerHeight, headerParams.height);
             ViewCompat.postInvalidateOnAnimation(this);
         } else {
             if (pullZoomListener != null && isStartScroll) {
