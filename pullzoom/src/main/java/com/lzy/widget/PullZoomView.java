@@ -18,6 +18,7 @@ import android.widget.Scroller;
  * 创建日期：2016/3/13
  * 描    述：
  * 修订历史：
+ *
  * ================================================
  */
 public class PullZoomView extends ScrollView {
@@ -106,7 +107,7 @@ public class PullZoomView extends ScrollView {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         findTagViews(this);
-        if (headerView == null || zoomView == null || contentView == null) {
+        if (headerView == null || contentView == null) {
             throw new IllegalStateException("content, header, zoom 都不允许为空,请在Xml布局中设置Tag，或者使用属性设置");
         }
         contentView.post(new Runnable() {
