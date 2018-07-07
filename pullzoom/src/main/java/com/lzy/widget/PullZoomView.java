@@ -128,22 +128,28 @@ public class PullZoomView extends ScrollView {
             ViewGroup vg = (ViewGroup) v;
             for (int i = 0; i < vg.getChildCount(); i++) {
                 View childView = vg.getChildAt(i);
-                String tag = (String) childView.getTag();
-                if (tag != null) {
-                    if (TAG_CONTENT.equals(tag) && contentView == null) contentView = childView;
-                    if (TAG_HEADER.equals(tag) && headerView == null) headerView = childView;
-                    if (TAG_ZOOM.equals(tag) && zoomView == null) zoomView = childView;
+
+                if (childView.getTag() instanceof String) {
+                    String tag = (String) childView.getTag();
+                    if (tag != null) {
+                        if (TAG_CONTENT.equals(tag) && contentView == null) contentView = childView;
+                        if (TAG_HEADER.equals(tag) && headerView == null) headerView = childView;
+                        if (TAG_ZOOM.equals(tag) && zoomView == null) zoomView = childView;
+                    }
                 }
+
                 if (childView instanceof ViewGroup) {
                     findTagViews(childView);
                 }
             }
         } else {
-            String tag = (String) v.getTag();
-            if (tag != null) {
-                if (TAG_CONTENT.equals(tag) && contentView == null) contentView = v;
-                if (TAG_HEADER.equals(tag) && headerView == null) headerView = v;
-                if (TAG_ZOOM.equals(tag) && zoomView == null) zoomView = v;
+            if (v.getTag() instanceof String) {
+                String tag = (String) v.getTag();
+                if (tag != null) {
+                    if (TAG_CONTENT.equals(tag) && contentView == null) contentView = v;
+                    if (TAG_HEADER.equals(tag) && headerView == null) headerView = v;
+                    if (TAG_ZOOM.equals(tag) && zoomView == null) zoomView = v;
+                }
             }
         }
     }
