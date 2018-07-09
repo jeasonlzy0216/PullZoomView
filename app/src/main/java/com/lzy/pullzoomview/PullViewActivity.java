@@ -3,7 +3,9 @@ package com.lzy.pullzoomview;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.lzy.widget.PullZoomView;
 
 public class PullViewActivity extends AppCompatActivity {
@@ -18,7 +20,13 @@ public class PullViewActivity extends AppCompatActivity {
         int zoomTime = intent.getIntExtra("zoomTime", 500);
         boolean isParallax = intent.getBooleanExtra("isParallax", true);
         boolean isZoomEnable = intent.getBooleanExtra("isZoomEnable", true);
-        PullZoomView pzv = (PullZoomView) findViewById(R.id.pzv);
+        String imageUrl= intent.getStringExtra("imageUrl");
+
+        ImageView imageHeader = findViewById(R.id.iv_header_image);
+
+        Glide.with(this).load(imageUrl).into(imageHeader);
+
+        PullZoomView pzv = findViewById(R.id.pzv);
         pzv.setIsParallax(isParallax);
         pzv.setIsZoomEnable(isZoomEnable);
         pzv.setSensitive(sensitive);

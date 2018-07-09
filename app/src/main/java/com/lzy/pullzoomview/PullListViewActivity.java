@@ -10,10 +10,12 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.lzy.widget.PullZoomView;
 
 import java.util.ArrayList;
@@ -34,6 +36,10 @@ public class PullListViewActivity extends AppCompatActivity implements AdapterVi
         int zoomTime = intent.getIntExtra("zoomTime", 500);
         boolean isParallax = intent.getBooleanExtra("isParallax", true);
         boolean isZoomEnable = intent.getBooleanExtra("isZoomEnable", true);
+        String imageUrl= intent.getStringExtra("imageUrl");
+
+        ImageView imageHeader = findViewById(R.id.iv_header_image);
+        Glide.with(this).load(imageUrl).into(imageHeader);
         PullZoomView pzv = (PullZoomView) findViewById(R.id.pzv);
         pzv.setIsParallax(isParallax);
         pzv.setIsZoomEnable(isZoomEnable);

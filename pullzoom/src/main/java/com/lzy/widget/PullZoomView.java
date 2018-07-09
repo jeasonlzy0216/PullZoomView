@@ -8,7 +8,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ScrollView;
 import android.widget.Scroller;
 
@@ -19,6 +18,7 @@ import android.widget.Scroller;
  * 创建日期：2016/3/13
  * 描    述：
  * 修订历史：
+ * <p>
  * ================================================
  */
 public class PullZoomView extends ScrollView {
@@ -35,8 +35,8 @@ public class PullZoomView extends ScrollView {
     private Scroller scroller;              //辅助缩放的对象
     private boolean isActionDown = false;   //第一次接收的事件是否是Down事件
     private boolean isZooming = false;      //是否正在被缩放
-    private MarginLayoutParams headerParams;//头部的参数
-    private int headerHeight;               //头部的原始高度
+    private MarginLayoutParams targetViewParams;//头部的参数
+    private int targetViewHeight;               //头部的原始高度
     private View headerView;                //头布局
     private View zoomView;                  //用于缩放的View
     private View contentView;               //主体内容View
@@ -46,6 +46,7 @@ public class PullZoomView extends ScrollView {
     private float downY;                    //Down事件的Y坐标
     private int maxY;                       //允许的最大滑出距离
     private int touchSlop;
+    private View targetView;                    // 真正用于缩放的View
 
     private OnScrollListener scrollListener;  //滚动的监听
 
@@ -53,7 +54,9 @@ public class PullZoomView extends ScrollView {
         this.scrollListener = scrollListener;
     }
 
-    /** 滚动的监听，范围从 0 ~ maxY */
+    /**
+     * 滚动的监听，范围从 0 ~ maxY
+     */
     public static abstract class OnScrollListener {
         public void onScroll(int l, int t, int oldl, int oldt) {
         }
@@ -99,12 +102,12 @@ public class PullZoomView extends ScrollView {
 
         scroller = new Scroller(getContext());
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-
-        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        post(new Runnable() {
             @Override
-            public void onGlobalLayout() {
-                getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                maxY = contentView.getTop();//只有布局完成后才能获取到正确的值
+            public void run() {
+                if (contentView != null) {
+                    maxY = contentView.getTop();
+                }
             }
         });
     }
@@ -116,63 +119,56 @@ public class PullZoomView extends ScrollView {
         if (headerView == null || zoomView == null || contentView == null) {
             throw new IllegalStateException("content, header, zoom 都不允许为空,请在Xml布局中设置Tag，或者使用属性设置");
         }
-        headerParams = (MarginLayoutParams) headerView.getLayoutParams();
-        headerHeight = headerParams.height;
-        smoothScrollTo(0, 0);//如果是滚动到最顶部，默认最顶部是ListView的顶部
+
+        if (((MarginLayoutParams) headerView.getLayoutParams()).height > 0) {
+            targetView = headerView;
+        } else if (((MarginLayoutParams) zoomView.getLayoutParams()).height > 0) {
+            targetView = zoomView;
+        } else {
+            throw new IllegalStateException("header, zoom高度都不固定，请设置其中一个固定的高度");
+        }
+
+        targetViewHeight = targetView.getMeasuredHeight();
+
+        targetViewParams = (MarginLayoutParams) targetView.getLayoutParams();
+
+        smoothScrollTo(0, 0);  // 如果是滚动到最顶部，默认最顶部是ListView的顶部
     }
 
-    /** 递归遍历所有的View，查询Tag */
+    /**
+     * 递归遍历所有的View，查询Tag
+     */
     private void findTagViews(View v) {
         if (v instanceof ViewGroup) {
             ViewGroup vg = (ViewGroup) v;
             for (int i = 0; i < vg.getChildCount(); i++) {
                 View childView = vg.getChildAt(i);
-                String tag = (String) childView.getTag();
-                if (tag != null) {
-                    if (TAG_CONTENT.equals(tag) && contentView == null) contentView = childView;
-                    if (TAG_HEADER.equals(tag) && headerView == null) headerView = childView;
-                    if (TAG_ZOOM.equals(tag) && zoomView == null) zoomView = childView;
+
+                if (childView.getTag() instanceof String) {
+                    String tag = (String) childView.getTag();
+                    if (tag != null) {
+                        if (TAG_CONTENT.equals(tag) && contentView == null) contentView = childView;
+                        if (TAG_HEADER.equals(tag) && headerView == null) headerView = childView;
+                        if (TAG_ZOOM.equals(tag) && zoomView == null) zoomView = childView;
+                    }
                 }
+
                 if (childView instanceof ViewGroup) {
                     findTagViews(childView);
                 }
             }
         } else {
-            String tag = (String) v.getTag();
-            if (tag != null) {
-                if (TAG_CONTENT.equals(tag) && contentView == null) contentView = v;
-                if (TAG_HEADER.equals(tag) && headerView == null) headerView = v;
-                if (TAG_ZOOM.equals(tag) && zoomView == null) zoomView = v;
+            if (v.getTag() instanceof String) {
+                String tag = (String) v.getTag();
+                if (tag != null) {
+                    if (TAG_CONTENT.equals(tag) && contentView == null) contentView = v;
+                    if (TAG_HEADER.equals(tag) && headerView == null) headerView = v;
+                    if (TAG_ZOOM.equals(tag) && zoomView == null) zoomView = v;
+                }
             }
         }
     }
 
-    private boolean scrollFlag = false;  //该标记主要是为了防止快速滑动时，onScroll回调中可能拿不到最大和最小值
-
-    @Override
-    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        super.onScrollChanged(l, t, oldl, oldt);
-        if (scrollListener != null) scrollListener.onScroll(l, t, oldl, oldt);
-        if (t >= 0 && t <= maxY) {
-            scrollFlag = true;
-            if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
-        } else if (scrollFlag) {
-            scrollFlag = false;
-            if (t < 0) t = 0;
-            if (t > maxY) t = maxY;
-            if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
-        }
-        if (t >= maxY) {
-            if (scrollListener != null) scrollListener.onContentScroll(l, t - maxY, oldl, oldt - maxY);
-        }
-        if (isParallax) {
-            if (t >= 0 && t <= headerHeight) {
-                headerView.scrollTo(0, -(int) (0.65 * t));
-            } else {
-                headerView.scrollTo(0, 0);
-            }
-        }
-    }
 
     /**
      * 主要用于解决 RecyclerView嵌套，直接拦截事件，可能会出现其他问题
@@ -222,16 +218,17 @@ public class PullZoomView extends ScrollView {
                 lastEventY = currentY;
                 if (isTop()) {
                     if (shiftY > shiftX && shiftY > touchSlop) {
-                        int height = (int) (headerParams.height + dy / sensitive + 0.5);
-                        if (height <= headerHeight) {
-                            height = headerHeight;
+                        int height = (int) (targetView.getHeight() + dy / sensitive + 0.5);
+                        if (height <= targetViewHeight) {
+                            height = targetViewHeight;
                             isZooming = false;
                         } else {
                             isZooming = true;
                         }
-                        headerParams.height = height;
-                        headerView.setLayoutParams(headerParams);
-                        if (pullZoomListener != null) pullZoomListener.onPullZoom(headerHeight, headerParams.height);
+                        targetViewParams.height = height;
+                        targetView.setLayoutParams(targetViewParams);
+                        if (pullZoomListener != null)
+                            pullZoomListener.onPullZoom(targetViewHeight, targetViewParams.height);
                     }
                 }
                 break;
@@ -239,7 +236,7 @@ public class PullZoomView extends ScrollView {
             case MotionEvent.ACTION_CANCEL:
                 isActionDown = false;
                 if (isZooming) {
-                    scroller.startScroll(0, headerParams.height, 0, -(headerParams.height - headerHeight), zoomTime);
+                    scroller.startScroll(0, targetView.getHeight(), 0, -(targetView.getHeight() - targetViewHeight), zoomTime);
                     isZooming = false;
                     ViewCompat.postInvalidateOnAnimation(this);
                 }
@@ -248,6 +245,35 @@ public class PullZoomView extends ScrollView {
         return isZooming || super.onTouchEvent(ev);
     }
 
+
+    private boolean scrollFlag = false;  //该标记主要是为了防止快速滑动时，onScroll回调中可能拿不到最大和最小值
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        if (scrollListener != null) scrollListener.onScroll(l, t, oldl, oldt);
+        if (t >= 0 && t <= maxY) {
+            scrollFlag = true;
+            if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
+        } else if (scrollFlag) {
+            scrollFlag = false;
+            if (t < 0) t = 0;
+            if (t > maxY) t = maxY;
+            if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
+        }
+        if (t >= maxY && scrollListener != null) {
+            scrollListener.onContentScroll(l, t - maxY, oldl, oldt - maxY);
+        }
+        if (isParallax) {
+            if (t >= 0 && t <= targetViewHeight) {
+                targetView.scrollTo(0, -(int) (0.65 * t));
+            } else {
+                targetView.scrollTo(0, 0);
+            }
+        }
+    }
+
+
     private boolean isStartScroll = false;          //当前是否下拉过
 
     @Override
@@ -255,9 +281,10 @@ public class PullZoomView extends ScrollView {
         super.computeScroll();
         if (scroller.computeScrollOffset()) {
             isStartScroll = true;
-            headerParams.height = scroller.getCurrY();
-            headerView.setLayoutParams(headerParams);
-            if (pullZoomListener != null) pullZoomListener.onPullZoom(headerHeight, headerParams.height);
+            targetViewParams.height = scroller.getCurrY();
+            targetView.setLayoutParams(targetViewParams);
+            if (pullZoomListener != null)
+                pullZoomListener.onPullZoom(targetViewHeight, targetViewParams.height);
             ViewCompat.postInvalidateOnAnimation(this);
         } else {
             if (pullZoomListener != null && isStartScroll) {
