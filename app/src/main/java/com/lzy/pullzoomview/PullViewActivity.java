@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.ViewTarget;
 import com.lzy.widget.PullZoomView;
 
 public class PullViewActivity extends AppCompatActivity {

@@ -261,9 +261,8 @@ public class PullZoomView extends ScrollView {
             if (t > maxY) t = maxY;
             if (scrollListener != null) scrollListener.onHeaderScroll(t, maxY);
         }
-        if (t >= maxY) {
-            if (scrollListener != null)
-                scrollListener.onContentScroll(l, t - maxY, oldl, oldt - maxY);
+        if (t >= maxY && scrollListener != null) {
+            scrollListener.onContentScroll(l, t - maxY, oldl, oldt - maxY);
         }
         if (isParallax) {
             if (t >= 0 && t <= targetViewHeight) {
