@@ -1,5 +1,5 @@
 # PullZoomView
-###类似QQ空间，新浪微博个人主页下拉头部放大的布局效果，支持ListView，GridView，ScrollView，WebView，RecyclerView，以及其他的任意View和ViewGroup。支持头部视差动画和阻尼下拉放大。
+###类似QQ空间，新浪微博个人主页下拉头部放大的布局效果，支持ListView，GridView，ScrollView，WebView，RecyclerView，以及其他的任意View和ViewGroup。支持头部视差动画和阻尼下拉放大.
 
 欢迎大家下载体验本项目，如果使用过程中遇到什么问题，欢迎反馈。
 
